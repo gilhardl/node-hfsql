@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Odbc = require("Odbc");
-var DatabaseConnection = /** @class */ (function () {
-    function DatabaseConnection(d, sn, sp, u, p, db) {
+var HfsqlConnection = /** @class */ (function () {
+    function HfsqlConnection(d, sn, sp, u, p, db) {
         if (d) {
             this.driver = d;
         }
@@ -40,17 +40,33 @@ var DatabaseConnection = /** @class */ (function () {
             this.database = '';
         }
     }
-    DatabaseConnection.prototype.getConnectionString = function () {
+    HfsqlConnection.prototype.getConnectionString = function () {
         return 'DRIVER={' + this.driver + '};Server Name=' + this.serverName + ';Server Port=' + this.serverPort + ';Database=' + this.database + ';UID=' + this.user + ';PWD=' + this.password;
     };
-    return DatabaseConnection;
+    return HfsqlConnection;
 }());
-exports.DatabaseConnection = DatabaseConnection;
+exports.HfsqlConnection = HfsqlConnection;
+// export class HfsqlFile {
+//     private name: string;
+//     private items: HfsqlItem[] = new Array<HfsqlItem>();
+//     // Constructeur
+//     public constructor(n: string) {
+//         this.name = n;
+//     }
+// }
+// export class HfsqlItem {
+//     private name: string;
+//     private type: string = '';
+//     // Constructeur
+//     public constructor(n: string) {
+//         this.name = n;
+//     }
+// }
 var HfsqlController = /** @class */ (function () {
     // Constructeur (vide)
     function HfsqlController() {
         // Variables globales du controller HFSQL
-        this.cnx = new DatabaseConnection();
+        this.cnx = new HfsqlConnection();
         this.db = Odbc();
         this.connected = false;
     }
@@ -98,13 +114,62 @@ var HfsqlController = /** @class */ (function () {
             }
         });
     };
+    //////////////////////////////////
+    //  Méthode manuelle
+    //////////////////////////////////
+    HfsqlController.prototype.HExecuteRequeteSQL = function (query) {
+        return this.db.querySync(query);
+    };
+    //////////////////////////////////
+    //
+    //  LECTURE
+    //
+    //////////////////////////////////
     // Méthode de lecture d'un fichier
     HfsqlController.prototype.HLit = function (filename) {
         return this.db.querySync("select * from " + filename);
     };
+    // Méthode de lecture du premier enregistrement d'un fichier
+    HfsqlController.prototype.HLitPremier = function (filename) {
+        return this.db.querySync("select top 1 * from " + filename);
+    };
+    // Méthode de lecture du dernier enregistrement d'un fichier
+    HfsqlController.prototype.HLitDernier = function (filename) {
+        return this.db.querySync("select last 1 * from " + filename);
+    };
+    // Méthode de recherche d'un enregistrement dans un fichier donné sur une rubrique donnée
+    HfsqlController.prototype.HLitRecherche = function (filename, item, value) {
+        return this.db.querySync("select last 1 * from " + filename + " where " + filename + "." + item + " = " + value);
+    };
     // Méthode de recherche d'un enregistrement dans un fichier donné sur une rubrique donnée
     HfsqlController.prototype.HLitRecherchePremier = function (filename, item, value) {
-        return this.db.querySync("select top 1 * from " + filename + " where " + filename + "." + item + " = " + value);
+        var results = this.db.querySync("select top 1 * from " + filename + " where " + filename + "." + item + " = " + value);
+        if (results.length > 0) {
+            return results[0];
+        }
+        else {
+            return undefined;
+        }
+    };
+    // Méthode de recherche d'un enregistrement dans un fichier donné sur une rubrique donnée
+    HfsqlController.prototype.HLitRechercheDernier = function (filename, item, value) {
+        var results = this.db.querySync("select last 1 * from " + filename + " where " + filename + "." + item + " = " + value);
+        if (results.length > 0) {
+            return results[0];
+        }
+        else {
+            return undefined;
+        }
+    };
+    // Méthode de récupération du nombre d'enregistrement dans un fichier
+    HfsqlController.prototype.HNbEnr = function (filename) {
+        var results = this.db.querySync("select count(*) from " + filename);
+        if (results.length > 0) {
+            return results[0];
+        }
+        else {
+            return undefined;
+        }
     };
     return HfsqlController;
 }());

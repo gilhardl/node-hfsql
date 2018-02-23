@@ -1,7 +1,7 @@
 {
   "name": "hfsql",
-  "version": "1.0.1",
-  "description": "A utility package to use HFSQL database",
+  "version": "1.0.2",
+  "description": "A synchronous interface to use HFSQL database",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,7 +13,6 @@
     "hfsql"
   ],
   "author": "GILHARD Lucas <l.gilhard@gmail.com> (http://www.gilhardl.fr)",
-  "license": "ISC",
   "devDependencies": {
     "typescript": "^2.7.2"
   },
